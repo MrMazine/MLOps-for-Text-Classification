@@ -81,6 +81,7 @@ def upload_dataset():
         file = request.files['file']
         dataset_name = request.form.get('dataset_name', 'unnamed_dataset')
         description = request.form.get('description', '')
+        dataset_url = request.form.get('dataset_url', '')  # Added dataset URL
         
         if file.filename == '':
             return jsonify({"error": "No selected file"}), 400
@@ -119,6 +120,7 @@ def upload_dataset():
                 dataset = Dataset(
                     name=dataset_name,
                     path=dest_path,
+                    url=dataset_url,  # Added URL
                     file_type=file_type,
                     size_bytes=file_size,
                     description=description
@@ -300,6 +302,82 @@ def download_dataset():
     
     except Exception as e:
         logger.error(f"Error in download_dataset: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/add_dataset_link', methods=['POST'])
+@timing_decorator
+def add_dataset_link():
+    """Add a link to an external dataset."""
+    try:
+        data = request.json
+        dataset_name = data.get('dataset_name')
+        dataset_url = data.get('dataset_url')
+        description = data.get('description', '')
+        
+        if not dataset_name or not dataset_url:
+            return jsonify({"error": "Dataset name and URL are required"}), 400
+        
+        if db_session is not None:
+            try:
+                # Store dataset info in database
+                dataset = Dataset(
+                    name=dataset_name,
+                    path="",  # Empty path since it's an external link
+                    url=dataset_url,
+                    file_type="external",
+                    description=description
+                )
+                db_session.add(dataset)
+                db_session.commit()
+                logger.info(f"Dataset link for {dataset_name} saved to database")
+                
+                return jsonify({
+                    "success": True,
+                    "message": f"Dataset link for {dataset_name} added successfully"
+                }), 200
+            except Exception as db_error:
+                if db_session is not None:
+                    db_session.rollback()
+                logger.error(f"Database error: {str(db_error)}")
+                return jsonify({"error": f"Database error: {str(db_error)}"}), 500
+        else:
+            return jsonify({"error": "Database connection not available"}), 500
+    
+    except Exception as e:
+        logger.error(f"Error in add_dataset_link: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/list_datasets', methods=['GET'])
+def list_datasets():
+    """List all datasets including local and external links."""
+    try:
+        datasets = []
+        
+        # Get datasets from DVC
+        local_datasets = dvc_handler.list_datasets()
+        
+        # Get datasets from database
+        if db_session is not None:
+            db_datasets = db_session.query(Dataset).all()
+            for dataset in db_datasets:
+                datasets.append({
+                    "id": dataset.id,
+                    "name": dataset.name,
+                    "path": dataset.path,
+                    "url": dataset.url,
+                    "file_type": dataset.file_type,
+                    "size_bytes": dataset.size_bytes,
+                    "description": dataset.description,
+                    "created_at": dataset.created_at.isoformat() if dataset.created_at else None,
+                })
+        else:
+            # If no database, just use DVC datasets
+            datasets = local_datasets
+        
+        return jsonify({"datasets": datasets}), 200
+    
+    except Exception as e:
+        logger.error(f"Error in list_datasets: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':

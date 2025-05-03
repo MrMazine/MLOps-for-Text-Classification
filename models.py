@@ -12,6 +12,7 @@ class Dataset(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
     path = Column(String(512), nullable=False)
+    url = Column(String(1024))  # Added URL field for dataset links
     file_type = Column(String(50))
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     record_count = Column(Integer)

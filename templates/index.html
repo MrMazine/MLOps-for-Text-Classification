@@ -75,63 +75,129 @@
 <div class="card mb-4">
     <div class="card-header">
         <h5 class="card-title mb-0">
-            <i class="fas fa-database me-2"></i>Versioned Datasets
+            <i class="fas fa-database me-2"></i>Datasets
         </h5>
     </div>
     <div class="card-body">
-        {% if datasets and datasets|length > 0 %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Dataset</th>
-                        <th>Size</th>
-                        <th>Last Updated</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for dataset in datasets %}
-                    <tr>
-                        <td>
-                            <strong>{{ dataset.path }}</strong>
-                            <div class="small text-muted">{{ dataset.last_message }}</div>
-                        </td>
-                        <td>{{ dataset.size_mb }} MB</td>
-                        <td>{{ dataset.last_date }}</td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-info view-versions-btn" 
-                                        data-dataset-path="{{ dataset.path }}">
-                                    <i class="fas fa-history"></i>
-                                </button>
-                                <button class="btn btn-outline-primary preprocess-btn"
-                                        data-dataset-path="{{ dataset.full_path }}"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#preprocessModal">
-                                    <i class="fas fa-cogs"></i>
-                                </button>
-                                <button class="btn btn-outline-success stats-btn"
-                                        data-dataset-path="{{ dataset.full_path }}">
-                                    <i class="fas fa-chart-bar"></i>
-                                </button>
-                                <a href="/download_dataset?dataset_path={{ dataset.full_path }}" 
-                                   class="btn btn-outline-secondary">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <ul class="nav nav-tabs" id="datasetTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="local-datasets-tab" data-bs-toggle="tab" data-bs-target="#local-datasets" 
+                        type="button" role="tab" aria-controls="local-datasets" aria-selected="true">
+                    <i class="fas fa-hdd me-2"></i>Local Datasets
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="linked-datasets-tab" data-bs-toggle="tab" data-bs-target="#linked-datasets" 
+                        type="button" role="tab" aria-controls="linked-datasets" aria-selected="false">
+                    <i class="fas fa-link me-2"></i>Linked Datasets
+                </button>
+            </li>
+        </ul>
+        <div class="tab-content pt-3" id="datasetTabsContent">
+            <!-- Local Datasets Tab -->
+            <div class="tab-pane fade show active" id="local-datasets" role="tabpanel" aria-labelledby="local-datasets-tab">
+                {% if datasets and datasets|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Dataset</th>
+                                <th>Size</th>
+                                <th>Last Updated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dataset in datasets %}
+                            {% if not dataset.url %}
+                            <tr>
+                                <td>
+                                    <strong>{{ dataset.path }}</strong>
+                                    <div class="small text-muted">{{ dataset.last_message }}</div>
+                                </td>
+                                <td>{{ dataset.size_mb }} MB</td>
+                                <td>{{ dataset.last_date }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-info view-versions-btn" 
+                                                data-dataset-path="{{ dataset.path }}">
+                                            <i class="fas fa-history"></i>
+                                        </button>
+                                        <button class="btn btn-outline-primary preprocess-btn"
+                                                data-dataset-path="{{ dataset.full_path }}"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#preprocessModal">
+                                            <i class="fas fa-cogs"></i>
+                                        </button>
+                                        <button class="btn btn-outline-success stats-btn"
+                                                data-dataset-path="{{ dataset.full_path }}">
+                                            <i class="fas fa-chart-bar"></i>
+                                        </button>
+                                        <a href="/download_dataset?dataset_path={{ dataset.full_path }}" 
+                                           class="btn btn-outline-secondary">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No local datasets found. Upload a dataset to get started.
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Linked Datasets Tab -->
+            <div class="tab-pane fade" id="linked-datasets" role="tabpanel" aria-labelledby="linked-datasets-tab">
+                {% if datasets and datasets|selectattr('url')|list|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Dataset Name</th>
+                                <th>URL</th>
+                                <th>Description</th>
+                                <th>Added Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dataset in datasets %}
+                            {% if dataset.url %}
+                            <tr>
+                                <td>
+                                    <strong>{{ dataset.name }}</strong>
+                                </td>
+                                <td>
+                                    <a href="{{ dataset.url }}" target="_blank" class="text-truncate d-inline-block" style="max-width: 200px;">
+                                        {{ dataset.url }}
+                                    </a>
+                                    <button class="btn btn-sm btn-link copy-url-btn p-0 ms-1" 
+                                            data-url="{{ dataset.url }}" title="Copy URL">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </td>
+                                <td>{{ dataset.description }}</td>
+                                <td>{{ dataset.created_at }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No linked datasets found. Add a dataset link to get started.
+                </div>
+                {% endif %}
+            </div>
         </div>
-        {% else %}
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>
-            No datasets found. Upload a dataset to get started.
-        </div>
-        {% endif %}
     </div>
 </div>
 
