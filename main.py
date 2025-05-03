@@ -36,9 +36,11 @@ if database_url:
     engine = create_engine(database_url, pool_pre_ping=True)
     db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
     
-    # Initialize database tables
+    # Drop all tables and recreate them to ensure schema is up to date
+    # (This is fine for development but should be handled by migrations in production)
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    logger.info("Database connected and tables created")
+    logger.info("Database tables dropped and recreated with current schema")
 else:
     logger.error("DATABASE_URL environment variable not set")
     db_session = None
@@ -424,4 +426,47 @@ if __name__ == '__main__':
         logger.info("DVC repository initialized")
     
     # Run the Flask application
+    # Add a setup route to initialize test data
+    @app.route('/setup_test_data')
+    def setup_test_data():
+        """Set up test data for quick testing. Uses spam.csv from the root directory."""
+        try:
+            source_path = 'spam.csv'
+            if not os.path.exists(source_path):
+                return jsonify({"error": "Test data file spam.csv not found in the root directory"}), 404
+            
+            # Create test data directory
+            test_data_dir = os.path.join(config.raw_data_path, 'spam_test')
+            os.makedirs(test_data_dir, exist_ok=True)
+            
+            # Copy the spam.csv file to the test directory
+            dest_path = os.path.join(test_data_dir, 'spam.csv')
+            shutil.copy(source_path, dest_path)
+            logger.info(f"Copied test data to {dest_path}")
+            
+            # Add external URL dataset link
+            if db_session is not None:
+                # Store dataset info in database for Kaggle Spam dataset
+                dataset = Dataset(
+                    name="Kaggle SMS Spam Collection",
+                    path="",  # Empty path since it's an external link
+                    url="https://www.kaggle.com/datasets/uciml/sms-spam-collection-dataset",
+                    file_type="external",
+                    description="The SMS Spam Collection is a public set of SMS labeled messages that have been collected for mobile phone spam research."
+                )
+                db_session.add(dataset)
+                db_session.commit()
+                logger.info("Added external Kaggle dataset link to database")
+            
+            return jsonify({
+                "success": True,
+                "message": "Test data has been set up successfully! Check the 'Local Datasets' and 'Linked Datasets' tabs.",
+                "local_path": dest_path,
+                "external_added": True if db_session is not None else False
+            }), 200
+        
+        except Exception as e:
+            logger.error(f"Error setting up test data: {str(e)}")
+            return jsonify({"error": str(e)}), 500
+    
     app.run(host='0.0.0.0', port=5000, debug=True)
