@@ -5,6 +5,9 @@ import yaml
 import tempfile
 import shutil
 import time
+import json
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 from src.config import Config
 from src.data.data_loader import DataLoader
@@ -14,6 +17,7 @@ from dvc_helpers.dvc_setup import DVCHandler
 from dvc_helpers.remote_storage import RemoteStorageManager
 from src.utils.logging_utils import setup_logging
 from src.utils.decorators import timing_decorator
+from models import Base, Dataset, DatasetVersion, DatasetStats, ProcessingTask, RemoteStorage
 
 # Setup logging
 setup_logging()
@@ -26,10 +30,29 @@ app.secret_key = os.environ.get("SESSION_SECRET", "default-dev-secret")
 # Load configuration
 config = Config()
 
+# Configure database
+database_url = os.environ.get("DATABASE_URL")
+if database_url:
+    engine = create_engine(database_url, pool_pre_ping=True)
+    db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+    
+    # Initialize database tables
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database connected and tables created")
+else:
+    logger.error("DATABASE_URL environment variable not set")
+    db_session = None
+
 # Initialize components
 dvc_handler = DVCHandler(config.dvc_repo_path)
 remote_storage = RemoteStorageManager(config)
 data_validator = DataValidator()
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    """Close the database session at the end of the request."""
+    if db_session is not None:
+        db_session.remove()
 
 @app.route('/')
 def index():
@@ -57,6 +80,7 @@ def upload_dataset():
         
         file = request.files['file']
         dataset_name = request.form.get('dataset_name', 'unnamed_dataset')
+        description = request.form.get('description', '')
         
         if file.filename == '':
             return jsonify({"error": "No selected file"}), 400
@@ -79,7 +103,49 @@ def upload_dataset():
         shutil.copy(temp_file_path, dest_path)
         
         # Add and version the dataset with DVC
-        dvc_handler.add_and_commit_dataset(dest_path, f"Added new dataset: {dataset_name}")
+        commit_message = f"Added new dataset: {dataset_name}"
+        success = dvc_handler.add_and_commit_dataset(dest_path, commit_message)
+        
+        if success and db_session is not None:
+            # Get file size
+            file_size = os.path.getsize(dest_path)
+            
+            # Get file type
+            _, file_ext = os.path.splitext(file.filename)
+            file_type = file_ext.lower()[1:] if file_ext else 'unknown'
+            
+            try:
+                # Store dataset info in database
+                dataset = Dataset(
+                    name=dataset_name,
+                    path=dest_path,
+                    file_type=file_type,
+                    size_bytes=file_size,
+                    description=description
+                )
+                db_session.add(dataset)
+                
+                # Get commit hash from the latest version
+                versions = dvc_handler.get_dataset_versions(dest_path)
+                if versions and len(versions) > 0:
+                    latest_version = versions[0]
+                    dataset_version = DatasetVersion(
+                        dataset_id=dataset.id,
+                        commit_hash=latest_version['hash'],
+                        message=commit_message,
+                        author=latest_version['author'],
+                        is_current=True
+                    )
+                    db_session.add(dataset_version)
+                
+                # Commit the transaction
+                db_session.commit()
+                logger.info(f"Dataset {dataset_name} saved to database")
+            except Exception as db_error:
+                if db_session is not None:
+                    db_session.rollback()
+                logger.error(f"Database error: {str(db_error)}")
+                # Continue with the process even if database fails
         
         # Clean up
         shutil.rmtree(temp_dir)
@@ -87,6 +153,8 @@ def upload_dataset():
         return jsonify({"success": True, "message": f"Dataset {dataset_name} uploaded and versioned successfully"}), 200
     
     except Exception as e:
+        if db_session is not None:
+            db_session.rollback()
         logger.error(f"Error in upload_dataset: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
