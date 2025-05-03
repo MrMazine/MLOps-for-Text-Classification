@@ -1,0 +1,57 @@
+1. Répartition des Tâches
+Chaque membre peut se concentrer sur un module spécifique du projet MLOps. Voici une suggestion de répartition basée sur les fonctionnalités principales décrites dans le cahier des charges :	
+Membre 1 : Gestion des Données et Versioning (Data Engineer)
+•	Responsabilités principales :
+•	Implémentation de DVC (Data Version Control) pour suivre les versions des données.
+•	Préparation et nettoyage des données (ex. suppression des valeurs manquantes, normalisation).
+•	Utilisation de générateurs et itérateurs pour charger les données de manière paresseuse.
+•	Suivi des modifications des données avec DVC et stockage dans un système distant (ex. S3, Google Drive).
+•	Technologies utilisées :
+•	Python, DVC, Pandas, NumPy.
+•	Bibliothèques pour le traitement de texte (SpaCy, NLTK, Hugging Face Transformers).
+•	Travail parallèle possible :
+•	Ce membre peut travailler indépendamment sur la gestion des données, car cette étape ne dépend pas directement des autres modules.
+________________________________________
+Membre 2 : Entraînement des Modèles et Suivi des Expériences (Machine Learning Engineer)
+•	Responsabilités principales :
+•	Entraînement de modèles de classification de texte avec différentes architectures (BERT, LSTM, Logistic Regression, etc.).
+•	Utilisation de MLflow pour suivre les performances des modèles, les hyperparamètres et les métriques.
+•	Implémentation de décorateurs pour ajouter des fonctionnalités transversales comme le logging des performances ou le suivi du temps d’exécution.
+•	Optimisation des modèles avec des techniques comme Grid Search ou Hyperparameter Tuning.
+•	Technologies utilisées :
+•	Python, PyTorch/TensorFlow, Scikit-learn.
+•	MLflow pour le suivi des expériences.
+•	Design patterns comme Factory Pattern pour créer dynamiquement des modèles selon les besoins.
+•	Travail parallèle possible :
+•	Ce membre peut commencer à entraîner des modèles dès que les données sont prêtes. Il peut également tester différents algorithmes en parallèle.
+________________________________________
+Membre 3 : Déploiement, Sécurité et Monitoring (DevOps Engineer)
+•	Responsabilités principales :
+•	Création d’une API REST avec FastAPI pour exposer le modèle en production.
+•	Déploiement du modèle via des conteneurs Docker et gestion de l’évolutivité avec Kubernetes .
+•	Mise en place de mécanismes de sécurité :
+•	Authentification sécurisée avec OAuth2 et JWT.
+•	Chiffrement des données sensibles (AES pour le stockage, TLS pour le transfert).
+•	Contrôles d’accès basés sur les rôles (RBAC).
+•	Surveillance en temps réel des performances du modèle avec Prometheus et Grafana .
+•	Détection des drifts (Data Drift, Concept Drift) et mise en place d’un processus automatisé de réentraînement si nécessaire.
+•	Technologies utilisées :
+•	FastAPI, Docker, Kubernetes.
+•	Prometheus, Grafana pour le monitoring.
+•	OAuth2, JWT, AES, TLS pour la sécurité.
+•	Travail parallèle possible :
+•	Ce membre peut travailler sur la configuration de l’infrastructure (Docker, Kubernetes) et la sécurité indépendamment des autres modules, tant que l’API et les modèles sont prêts pour le déploiement.
+________________________________________
+2. Points Communs et Collaboration
+Bien que chaque membre puisse travailler de manière parallèle sur sa partie, certains aspects nécessitent une coordination étroite :
+A. Base de Données
+•	Les trois membres doivent collaborer pour concevoir le schéma de la base de données (tables pour les données, modèles, logs, etc.).
+•	Exemple de tables : RawData, ProcessedData, Models, Metrics, Logs.
+B. Pipeline de Données
+•	Le Membre 1 doit fournir des données propres et bien organisées pour que le Membre 2 puisse entraîner les modèles.
+C. Déploiement
+•	Le Membre 3 doit collaborer avec le Membre 2 pour intégrer les modèles entraînés dans l’API REST.
+D. Tests et Intégration
+•	Une fois que chaque membre a terminé sa partie, l’équipe doit collaborer pour tester l’intégration des différents modules (données, modèle, API).
+3. Organisation Temporelle
+Pour faciliter le travail parallèle, voici un calendrier possible :

@@ -1,0 +1,93 @@
+CAHIER DES CHARGES - PROJET MLOPS POUR LA CLASSIFICATION DE TEXTE
+
+1. CONTEXTE ET OBJECTIFS
+--------------------------------------------------
+Objectif principal:
+Mise en place d'un pipeline MLOps complet pour la classification de texte avec:
+- Gestion de version des données (DVC)
+- Optimisation du code (générateurs, itérateurs, décorateurs)
+- Sécurité renforcée
+
+Objectifs spécifiques:
+✔ Versioning des données avec DVC
+✔ Création modèle classification modulaire
+✔ Déploiement via FastAPI/Docker/Kubernetes
+✔ Monitoring des performances
+✔ Mécanismes de sécurité intégrés
+
+2. FONCTIONNALITÉS PRINCIPALES
+--------------------------------------------------
+2.1 GESTION DONNÉES & VERSIONING
+- DVC pour tracking données et modèles
+- MLflow pour suivi des expériences
+
+2.2 OPTIMISATION MÉMOIRE
+- Générateurs pour chargement paresseux
+- Itérateurs pour traitement par batch
+
+2.3 ENTRÂINEMENT MODÈLES
+- Architectures supportées:
+  • BERT
+  • LSTM 
+  • Régression logique
+
+2.4 DÉCORATEURS
+- Ajout fonctionnalités transversales:
+  • Timing exécution
+  • Logging
+  • Validations
+
+2.5 DÉPLOIEMENT API
+- FastAPI pour interface REST
+- Containerisation Docker
+- Orchestration Kubernetes
+
+2.6 SÉCURITÉ
+- Auth OAuth2/JWT
+- Chiffrement AES/TLS
+- Contrôle accès RBAC
+
+2.7 MONITORING
+- Prometheus/Grafana
+- Détection drift (data/concept)
+- Alertes automatiques
+
+2.8 DESIGN PATTERNS
+- Singleton: gestion centralisée
+- Factory: création dynamique modèles
+- Strategy: changement algorithmique
+
+3. TECHNOLOGIES CLÉS
+--------------------------------------------------
+[PYTHON STACK]
+• NLP: HuggingFace, SpaCy
+• ML: PyTorch, TF, Scikit-learn
+• MLOps: DVC, MLflow
+
+[PRODUCTION]
+• API: FastAPI
+• Infra: Docker, Kubernetes
+• Monitoring: Prometheus, Grafana
+
+[SÉCURITÉ]
+• Auth: OAuth2, JWT
+• Cryptage: AES, TLS
+• CI/CD: GitHub Actions, Jenkins
+
+4. GARANTIES DE QUALITÉ
+--------------------------------------------------
+✓ Versioning reproductible
+✓ Code optimisé et modulaire
+✓ Sécurité renforcée
+✓ Monitoring temps réel
+✓ Architecture scalable
+✓ Maintenance automatisée
+
+5. CONCLUSION
+--------------------------------------------------
+Solution MLOps complète intégrant:
+- Bonnes pratiques de développement
+- Gestion de version robuste
+- Sécurité de bout en bout
+- Monitoring proactif
+- Architecture flexible
