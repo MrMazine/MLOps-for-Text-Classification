@@ -91,6 +91,91 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+    
+    // Add dataset link
+    const addDatasetLinkBtn = document.getElementById('addDatasetLinkBtn');
+    if (addDatasetLinkBtn) {
+        addDatasetLinkBtn.addEventListener('click', function() {
+            const form = document.getElementById('addDatasetLinkForm');
+            const formData = new FormData(form);
+            
+            // Validate form
+            const datasetName = formData.get('dataset_name');
+            const datasetUrl = formData.get('dataset_url');
+            
+            if (!datasetName || !datasetUrl) {
+                showError('Please fill in all required fields');
+                return;
+            }
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addDatasetLinkModal'));
+            modal.hide();
+            
+            // Show loading
+            showLoading();
+            
+            // Convert form data to JSON
+            const jsonData = {
+                dataset_name: datasetName,
+                dataset_url: datasetUrl,
+                description: formData.get('description') || ''
+            };
+            
+            // Send AJAX request
+            fetch('/add_dataset_link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    showSuccess(data.message);
+                    // Reload page to show new dataset link
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('An error occurred while adding dataset link: ' + error);
+            });
+        });
+    }
+
+    // Copy URL to clipboard functionality for dataset links
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.closest('.copy-url-btn')) {
+            const btn = e.target.closest('.copy-url-btn');
+            const url = btn.getAttribute('data-url');
+            
+            // Create a temporary input element
+            const tempInput = document.createElement('input');
+            tempInput.value = url;
+            document.body.appendChild(tempInput);
+            
+            // Select and copy the text
+            tempInput.select();
+            document.execCommand('copy');
+            
+            // Remove the temporary element
+            document.body.removeChild(tempInput);
+            
+            // Visual feedback
+            const originalIcon = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => {
+                btn.innerHTML = originalIcon;
+            }, 1500);
+        }
+    });
 
     // Sync Remote button
     const syncRemoteBtn = document.getElementById('syncRemoteBtn');

@@ -60,8 +60,41 @@ def index():
     try:
         # Get DVC information
         dvc_info = dvc_handler.get_dvc_info()
-        # Get available datasets
-        datasets = dvc_handler.list_datasets()
+        
+        # Get all datasets (local and linked)
+        try:
+            # First try using database
+            if db_session is not None:
+                db_datasets = db_session.query(Dataset).all()
+                datasets = []
+                
+                for dataset in db_datasets:
+                    # For local datasets, get additional info from DVC
+                    if dataset.path and not dataset.url:
+                        dvc_datasets = dvc_handler.list_datasets()
+                        dvc_dataset = next((d for d in dvc_datasets if d['path'] == dataset.path), None)
+                        if dvc_dataset:
+                            dataset_info = dvc_dataset
+                            dataset_info['name'] = dataset.name
+                            dataset_info['description'] = dataset.description
+                            dataset_info['url'] = None
+                            datasets.append(dataset_info)
+                    # For external links
+                    elif dataset.url:
+                        datasets.append({
+                            'name': dataset.name,
+                            'path': dataset.path,
+                            'url': dataset.url,
+                            'description': dataset.description,
+                            'created_at': dataset.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                        })
+            else:
+                # Fallback to DVC datasets if database is not available
+                datasets = dvc_handler.list_datasets()
+        except Exception as db_error:
+            logger.error(f"Error getting datasets from database: {str(db_error)}")
+            # Fallback to DVC datasets
+            datasets = dvc_handler.list_datasets()
         
         return render_template('index.html', 
                               dvc_info=dvc_info,
