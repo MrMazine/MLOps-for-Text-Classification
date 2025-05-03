@@ -1,0 +1,31 @@
+stages:
+  preprocess:
+    cmd: python -c "from src.data.preprocessing import TextPreprocessor; from src.data.data_loader import DataLoader; from src.config import Config; config = Config(); preprocessor = TextPreprocessor(config.text_preprocessing); loader = DataLoader('${data}', config); preprocessor.preprocess_and_save(loader, '${output}')"
+    deps:
+      - ${data}
+      - src/data/preprocessing.py
+      - src/data/data_loader.py
+    params:
+      - text_preprocessing
+    outs:
+      - ${output}:
+          cache: true
+  
+  validate_data:
+    cmd: python -c "from src.data.data_validator import DataValidator; validator = DataValidator(); is_valid, msg = validator.validate_dataset('${data}'); print(msg); assert is_valid, msg"
+    deps:
+      - ${data}
+      - src/data/data_validator.py
+    outs:
+      - ${output}:
+          cache: false
+
+params:
+  text_preprocessing:
+    lowercase: true
+    remove_punctuation: true
+    remove_numbers: false
+    remove_stopwords: true
+    language: english
+    stemming: false
+    lemmatization: true

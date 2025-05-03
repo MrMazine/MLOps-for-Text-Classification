@@ -1,0 +1,254 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- DVC Information Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>DVC Information
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if dvc_info and dvc_info.initialized %}
+                <div class="mb-3">
+                    <strong>Status:</strong> <span class="badge bg-success">Initialized</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Repository Path:</strong> <code>{{ dvc_info.repo_path }}</code>
+                </div>
+                <div class="mb-3">
+                    <strong>Remotes:</strong>
+                    {% if dvc_info.remotes %}
+                        <ul class="list-group mt-2">
+                        {% for remote in dvc_info.remotes %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ remote.name }}
+                                {% if remote.is_default %}
+                                <span class="badge bg-primary">Default</span>
+                                {% endif %}
+                                <code class="small">{{ remote.url }}</code>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <span class="text-warning">No remotes configured</span>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    DVC is not initialized. Please initialize DVC to start versioning your datasets.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadDatasetModal">
+                        <i class="fas fa-upload me-2"></i>Upload Dataset
+                    </button>
+                    <button class="btn btn-info" id="syncRemoteBtn">
+                        <i class="fas fa-sync me-2"></i>Sync with Remote
+                    </button>
+                    <a href="/download_sample_config" class="btn btn-outline-secondary">
+                        <i class="fas fa-file-download me-2"></i>Download Sample Config
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Datasets Card -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-database me-2"></i>Versioned Datasets
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if datasets and datasets|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Dataset</th>
+                        <th>Size</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dataset in datasets %}
+                    <tr>
+                        <td>
+                            <strong>{{ dataset.path }}</strong>
+                            <div class="small text-muted">{{ dataset.last_message }}</div>
+                        </td>
+                        <td>{{ dataset.size_mb }} MB</td>
+                        <td>{{ dataset.last_date }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-info view-versions-btn" 
+                                        data-dataset-path="{{ dataset.path }}">
+                                    <i class="fas fa-history"></i>
+                                </button>
+                                <button class="btn btn-outline-primary preprocess-btn"
+                                        data-dataset-path="{{ dataset.full_path }}"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#preprocessModal">
+                                    <i class="fas fa-cogs"></i>
+                                </button>
+                                <button class="btn btn-outline-success stats-btn"
+                                        data-dataset-path="{{ dataset.full_path }}">
+                                    <i class="fas fa-chart-bar"></i>
+                                </button>
+                                <a href="/download_dataset?dataset_path={{ dataset.full_path }}" 
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No datasets found. Upload a dataset to get started.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Dataset Versions Modal -->
+<div class="modal fade" id="versionsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Dataset Versions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="versionsContent">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dataset Statistics Modal -->
+<div class="modal fade" id="statsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Dataset Statistics</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="statsContent">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preprocess Dataset Modal -->
+<div class="modal fade" id="preprocessModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Preprocess Dataset</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="preprocessForm">
+                    <input type="hidden" id="preprocessDatasetPath" name="dataset_path">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Preprocessing Steps</label>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preprocessing_steps" 
+                                   value="lowercase" id="lowercase" checked>
+                            <label class="form-check-label" for="lowercase">
+                                Convert to lowercase
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preprocessing_steps" 
+                                   value="remove_punctuation" id="remove_punctuation" checked>
+                            <label class="form-check-label" for="remove_punctuation">
+                                Remove punctuation
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preprocessing_steps" 
+                                   value="remove_numbers" id="remove_numbers">
+                            <label class="form-check-label" for="remove_numbers">
+                                Remove numbers
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preprocessing_steps" 
+                                   value="remove_stopwords" id="remove_stopwords" checked>
+                            <label class="form-check-label" for="remove_stopwords">
+                                Remove stopwords
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preprocessing_steps" 
+                                   value="stemming" id="stemming">
+                            <label class="form-check-label" for="stemming">
+                                Apply stemming
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="preprocessing_steps" 
+                                   value="lemmatization" id="lemmatization" checked>
+                            <label class="form-check-label" for="lemmatization">
+                                Apply lemmatization
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="preprocessBtn">
+                    <i class="fas fa-cogs me-1"></i> Process
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
