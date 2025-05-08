@@ -1,0 +1,398 @@
+{% extends 'layout.html' %}
+
+{% block title %}Preprocessing - Fake News Classification{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1><i class="bi bi-gear me-2"></i> Text Preprocessing</h1>
+            <p class="lead">Clean, normalize, and extract features from news articles</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#newPreprocessingModal">
+                <i class="bi bi-plus-circle me-2"></i> New Preprocessing Task
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <ul class="nav nav-tabs" id="preprocessingTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tasks-tab" data-bs-toggle="tab" data-bs-target="#tasks" type="button" role="tab" aria-controls="tasks" aria-selected="true">
+                    <i class="bi bi-list-check me-2"></i> Tasks
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="processed-tab" data-bs-toggle="tab" data-bs-target="#processed" type="button" role="tab" aria-controls="processed" aria-selected="false">
+                    <i class="bi bi-file-earmark-check me-2"></i> Processed Datasets
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="features-tab" data-bs-toggle="tab" data-bs-target="#features" type="button" role="tab" aria-controls="features" aria-selected="false">
+                    <i class="bi bi-diagram-3 me-2"></i> Feature Sets
+                </button>
+            </li>
+        </ul>
+        <div class="tab-content" id="preprocessingTabsContent">
+            <div class="tab-pane fade show active" id="tasks" role="tabpanel" aria-labelledby="tasks-tab">
+                <div class="card border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Task ID</th>
+                                        <th>Dataset</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Started</th>
+                                        <th>Duration</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tasksList">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="text-muted mt-2">Loading tasks...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="processed" role="tabpanel" aria-labelledby="processed-tab">
+                <div class="card border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Original Dataset</th>
+                                        <th>Records</th>
+                                        <th>Preprocessing Steps</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="processedList">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="text-muted mt-2">Loading processed datasets...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="features" role="tabpanel" aria-labelledby="features-tab">
+                <div class="card border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Feature Type</th>
+                                        <th>Source Dataset</th>
+                                        <th>Features</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="featuresList">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="text-muted mt-2">Loading feature sets...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- No Tasks Found Message -->
+<div id="noTasks" class="card mb-4 d-none">
+    <div class="card-body text-center py-5">
+        <img src="https://cdn-icons-png.flaticon.com/512/4076/4076478.png" alt="No tasks" width="100" class="mb-3">
+        <h3 class="text-muted">No preprocessing tasks found</h3>
+        <p class="text-muted mb-4">Start a new preprocessing task to clean and normalize your news datasets.</p>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newPreprocessingModal">
+            <i class="bi bi-plus-circle me-2"></i> New Preprocessing Task
+        </button>
+    </div>
+</div>
+
+<!-- New Preprocessing Modal -->
+<div class="modal fade" id="newPreprocessingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-gear me-2"></i> New Preprocessing Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="preprocessingForm">
+                    <div class="mb-3">
+                        <label for="datasetSelect" class="form-label">Select Dataset</label>
+                        <select class="form-select" id="datasetSelect" required>
+                            <option value="">Select a dataset...</option>
+                            <!-- Options will be loaded dynamically -->
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="taskType" class="form-label">Task Type</label>
+                        <select class="form-select" id="taskType" required>
+                            <option value="preprocessing">Text Preprocessing</option>
+                            <option value="feature_extraction">Feature Extraction</option>
+                        </select>
+                    </div>
+                    
+                    <div id="preprocessingOptions">
+                        <h6 class="border-bottom pb-2 mb-3">Preprocessing Options</h6>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="lowercase" checked>
+                                    <label class="form-check-label" for="lowercase">Convert to lowercase</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="removeStopwords" checked>
+                                    <label class="form-check-label" for="removeStopwords">Remove stopwords</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="removePunctuation" checked>
+                                    <label class="form-check-label" for="removePunctuation">Remove punctuation</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="removeNumbers" checked>
+                                    <label class="form-check-label" for="removeNumbers">Remove numbers</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="lemmatize" checked>
+                                    <label class="form-check-label" for="lemmatize">Lemmatization</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="stemming">
+                                    <label class="form-check-label" for="stemming">Stemming</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="textColumn" class="form-label">Text Column Name</label>
+                            <input type="text" class="form-control" id="textColumn" value="text" placeholder="Column name containing the news text">
+                        </div>
+                    </div>
+                    
+                    <div id="featureExtractionOptions" class="d-none">
+                        <h6 class="border-bottom pb-2 mb-3">Feature Extraction Options</h6>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="featureType" id="useTfIdf" value="tfidf" checked>
+                                    <label class="form-check-label" for="useTfIdf">TF-IDF Vectorization</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="featureType" id="useWordEmbeddings" value="embeddings">
+                                    <label class="form-check-label" for="useWordEmbeddings">Word Embeddings</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="maxFeatures" class="form-label">Max Features</label>
+                                    <input type="number" class="form-control" id="maxFeatures" value="5000" min="100" max="50000">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="textColumnFeature" class="form-label">Text Column</label>
+                                <input type="text" class="form-control" id="textColumnFeature" value="text" placeholder="Column name containing the news text">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="labelColumn" class="form-label">Label Column</label>
+                                <input type="text" class="form-control" id="labelColumn" value="label" placeholder="Column name containing the label">
+                            </div>
+                        </div>
+                        
+                        <div id="embeddingOptions" class="d-none">
+                            <div class="mb-3">
+                                <label for="embeddingDim" class="form-label">Embedding Dimension</label>
+                                <select class="form-select" id="embeddingDim">
+                                    <option value="50">50</option>
+                                    <option value="100" selected>100</option>
+                                    <option value="200">200</option>
+                                    <option value="300">300</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="maxSeqLength" class="form-label">Max Sequence Length</label>
+                                <input type="number" class="form-control" id="maxSeqLength" value="500" min="50" max="2000">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="startTaskBtn">
+                    <i class="bi bi-play-fill me-2"></i> Start Task
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Task Details Modal -->
+<div class="modal fade" id="taskDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskDetailsTitle">Task Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><strong>Task ID:</strong> <span id="detailTaskId">-</span></p>
+                        <p><strong>Type:</strong> <span id="detailTaskType">-</span></p>
+                        <p><strong>Status:</strong> <span id="detailTaskStatus">-</span></p>
+                        <p><strong>Input Dataset:</strong> <span id="detailTaskDataset">-</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Started:</strong> <span id="detailTaskStarted">-</span></p>
+                        <p><strong>Completed:</strong> <span id="detailTaskCompleted">-</span></p>
+                        <p><strong>Duration:</strong> <span id="detailTaskDuration">-</span></p>
+                        <p><strong>Output:</strong> <span id="detailTaskOutput">-</span></p>
+                    </div>
+                </div>
+                
+                <h6 class="border-bottom pb-2 mb-3">Parameters</h6>
+                <div class="card">
+                    <div class="card-body">
+                        <pre id="detailTaskParams" class="mb-0" style="max-height: 200px; overflow-y: auto;">-</pre>
+                    </div>
+                </div>
+                
+                <div id="taskErrorContainer" class="d-none mt-4">
+                    <h6 class="text-danger border-bottom pb-2 mb-3">Error</h6>
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span id="detailTaskError">-</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary d-none" id="viewOutputBtn">
+                    <i class="bi bi-file-earmark me-2"></i> View Output
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle between preprocessing and feature extraction options
+    document.getElementById('taskType').addEventListener('change', function() {
+        const taskType = this.value;
+        if (taskType === 'preprocessing') {
+            document.getElementById('preprocessingOptions').classList.remove('d-none');
+            document.getElementById('featureExtractionOptions').classList.add('d-none');
+        } else {
+            document.getElementById('preprocessingOptions').classList.add('d-none');
+            document.getElementById('featureExtractionOptions').classList.remove('d-none');
+        }
+    });
+    
+    // Toggle embedding options
+    document.querySelectorAll('input[name="featureType"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'embeddings') {
+                document.getElementById('embeddingOptions').classList.remove('d-none');
+            } else {
+                document.getElementById('embeddingOptions').classList.add('d-none');
+            }
+        });
+    });
+    
+    // Start task button
+    document.getElementById('startTaskBtn').addEventListener('click', function() {
+        // Implementation would go here
+        alert('Start task functionality would be implemented here');
+    });
+    
+    // Load datasets for the select dropdown
+    fetch('/api/dataset/list')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const select = document.getElementById('datasetSelect');
+                select.innerHTML = '<option value="">Select a dataset...</option>';
+                
+                // Add local datasets
+                const localDatasets = data.datasets.filter(d => d.path && d.path !== '');
+                if (localDatasets.length > 0) {
+                    const localGroup = document.createElement('optgroup');
+                    localGroup.label = 'Local Datasets';
+                    localDatasets.forEach(dataset => {
+                        const option = document.createElement('option');
+                        option.value = dataset.id;
+                        option.textContent = dataset.name;
+                        localGroup.appendChild(option);
+                    });
+                    select.appendChild(localGroup);
+                }
+                
+                // Add processed datasets
+                const processedDatasets = data.datasets.filter(d => d.name.includes('Processed'));
+                if (processedDatasets.length > 0) {
+                    const processedGroup = document.createElement('optgroup');
+                    processedGroup.label = 'Processed Datasets';
+                    processedDatasets.forEach(dataset => {
+                        const option = document.createElement('option');
+                        option.value = dataset.id;
+                        option.textContent = dataset.name;
+                        processedGroup.appendChild(option);
+                    });
+                    select.appendChild(processedGroup);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading datasets:', error);
+        });
+});
+</script>
+{% endblock %}
