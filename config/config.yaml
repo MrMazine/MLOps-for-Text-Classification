@@ -1,0 +1,15 @@
+batch_size: 1000
+dvc_remote_name: origin
+dvc_remote_url: null
+dvc_repo_path: /home/runner/workspace
+processed_data_path: /home/runner/workspace/data/processed
+raw_data_path: /home/runner/workspace/data/raw
+text_preprocessing:
+  language: english
+  lemmatization: true
+  lowercase: true
+  remove_numbers: false
+  remove_punctuation: true
+  remove_stopwords: true
+  stemming: false
+use_generators: true
