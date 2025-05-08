@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake News Classification MLOps System</title>
+    <!-- Bootstrap CSS (Replit dark theme) -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body data-bs-theme="dark">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-newspaper me-2"></i>
+                Fake News Detector
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/datasets">Datasets</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/preprocessing">Preprocessing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/models">Models</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/visualization">Visualization</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <a href="/setup_test_data" class="btn btn-outline-info">Setup Test Data</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="p-4 mb-4 bg-dark rounded-3 border border-secondary">
+            <div class="container-fluid py-4">
+                <h1 class="display-5 fw-bold mb-4">Fake News Classification MLOps System</h1>
+                <p class="fs-4">A comprehensive platform for detecting fake news using machine learning and NLP techniques with robust MLOps practices.</p>
+                <p class="mb-4">This system provides end-to-end data versioning, preprocessing, model training, and evaluation for fake news detection.</p>
+                <a href="/datasets" class="btn btn-primary btn-lg me-2">Manage Datasets</a>
+                <a href="/models" class="btn btn-secondary btn-lg">View Models</a>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 bg-dark border-secondary">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-database me-2"></i>
+                            Data Management
+                        </h5>
+                        <p class="card-text">Upload, version, and manage your fake news datasets with DVC integration.</p>
+                        <a href="/datasets" class="btn btn-outline-primary">Manage Datasets</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 bg-dark border-secondary">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-cogs me-2"></i>
+                            Preprocessing
+                        </h5>
+                        <p class="card-text">Clean, tokenize and extract features from news articles for better classification.</p>
+                        <a href="/preprocessing" class="btn btn-outline-primary">Preprocess Data</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 bg-dark border-secondary">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-brain me-2"></i>
+                            Model Training
+                        </h5>
+                        <p class="card-text">Train and evaluate various ML models to detect fake news with high accuracy.</p>
+                        <a href="/models" class="btn btn-outline-primary">Manage Models</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 bg-dark border-secondary">
+                    <div class="card-body">
+                        <h5 class="card-title">Getting Started</h5>
+                        <ol class="ps-3">
+                            <li class="mb-2">Upload your news datasets or use our sample data</li>
+                            <li class="mb-2">Preprocess the text data to clean and normalize it</li>
+                            <li class="mb-2">Extract features from the news articles</li>
+                            <li class="mb-2">Train classification models on your prepared data</li>
+                            <li class="mb-2">Evaluate and compare model performance</li>
+                            <li class="mb-2">Use the best model to classify new news articles</li>
+                        </ol>
+                        <div class="text-center mt-3">
+                            <a href="/setup_test_data" class="btn btn-success">Setup Test Data</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 bg-dark border-secondary">
+                    <div class="card-body">
+                        <h5 class="card-title">Project Features</h5>
+                        <ul class="ps-3">
+                            <li class="mb-2"><strong>Data Version Control:</strong> Track changes to datasets using DVC</li>
+                            <li class="mb-2"><strong>Advanced Preprocessing:</strong> NLP techniques for text cleaning and normalization</li>
+                            <li class="mb-2"><strong>Feature Engineering:</strong> TF-IDF, embeddings, and other text features</li>
+                            <li class="mb-2"><strong>Multiple Models:</strong> SVM, Random Forest, Logistic Regression, and deep learning</li>
+                            <li class="mb-2"><strong>Model Evaluation:</strong> Accuracy, precision, recall, F1-score metrics</li>
+                            <li class="mb-2"><strong>Visualization:</strong> Interactive visualizations for data and model analysis</li>
+                            <li class="mb-2"><strong>Real-time Classification:</strong> Classify news articles with trained models</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Fake News Classification MLOps System</h5>
+                    <p>A comprehensive platform for detecting fake news using machine learning with robust MLOps practices.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-white">Home</a></li>
+                        <li><a href="/datasets" class="text-white">Datasets</a></li>
+                        <li><a href="/models" class="text-white">Models</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Resources</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="https://github.com/iterative/dvc" class="text-white" target="_blank">DVC</a></li>
+                        <li><a href="https://scikit-learn.org/" class="text-white" target="_blank">scikit-learn</a></li>
+                        <li><a href="https://www.nltk.org/" class="text-white" target="_blank">NLTK</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p>&copy; 2025 Fake News Detection Project. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

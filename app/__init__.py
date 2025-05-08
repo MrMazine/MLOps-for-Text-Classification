@@ -21,11 +21,13 @@ def create_app(test_config=None):
         Configured Flask application
     """
     # Configure logging
+    from datetime import datetime
+    current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s | %(levelname)-8s | %(message)s',
         handlers=[
-            logging.FileHandler(f"logs/fake_news_classification_{logging.Formatter().converter().strftime('%Y%m%d_%H%M%S')}.log"),
+            logging.FileHandler(f"logs/fake_news_classification_{current_time}.log"),
             logging.StreamHandler()
         ]
     )
