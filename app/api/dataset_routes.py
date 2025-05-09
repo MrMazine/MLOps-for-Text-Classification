@@ -40,6 +40,23 @@ def upload_dataset():
         # Save the file
         file_path = os.path.join(dataset_dir, filename)
         file.save(file_path)
+
+        # Save dataset metadata to the database
+        dataset = NewsDataset(
+            name=name,
+            path=file_path,
+            url=None,  # Optional: Add logic to generate a URL if needed
+            file_type=filename.split('.')[-1],
+            record_count=None,  # Optional: Add logic to count records if applicable
+            size_bytes=os.path.getsize(file_path),
+            description=description,
+            category=category
+        )
+        db.session.add(dataset)
+        db.session.commit()
+
+        return jsonify({"success": True, "message": "Dataset uploaded successfully.", "dataset_id": dataset.id}), 201
+        
         logger.info(f"Saved uploaded file to {file_path}")
         
         # Get basic file stats

@@ -16,7 +16,7 @@ db = SQLAlchemy(model_class=Base)
 def init_app(app: Flask):
     """Initialize database with Flask app."""
     # Configure database connection
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///default.db")
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
         "pool_pre_ping": True,
